@@ -1,4 +1,5 @@
-﻿<!DOCTYPE html>
+﻿@using MovieApp.Components.Layout
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -11,10 +12,23 @@
     <ImportMap/>
     <link rel="icon" type="image/png" href="favicon.png"/>
     <HeadOutlet/>
+    <title>Movie Rater</title>
 </head>
 
 <body>
-<Routes/>
+<CascadingAuthenticationState>
+    <Router AppAssembly="@typeof(App).Assembly">
+        <Found Context="routeData">
+            <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
+        </Found>
+        <NotFound>
+            <LayoutView Layout="@typeof(MainLayout)">
+                <p>Sorry, there's nothing at this address.</p>
+            </LayoutView>
+        </NotFound>
+    </Router>
+</CascadingAuthenticationState>
+<!--<Routes/> -->
 <script src="_framework/blazor.web.js"></script>
 </body>
 

@@ -5,7 +5,6 @@ using MovieApp.Components;
 using MovieApp.Components.Account;
 using MovieApp.Data;
 using MudBlazor.Services;
-using MovieApp.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,27 +20,23 @@ builder.Services.AddScoped<AuthenticationStateProvider, IdentityRevalidatingAuth
 // Add MudBlazor
 builder.Services.AddMudServices();
 
-builder.Services.AddAuthentication(options =>
-    {
-        options.DefaultScheme = IdentityConstants.ApplicationScheme;
-        options.DefaultSignInScheme = IdentityConstants.ExternalScheme;
-    })
-    .AddIdentityCookies();
-
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ??
-                       throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+// Database
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlite(connectionString));
-// Movie database
-builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlite("Data Source=movies.db"));
+    options.UseSqlite("Data Source=movies.db"));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-builder.Services.AddIdentityCore<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
-    .AddEntityFrameworkStores<ApplicationDbContext>()
-    .AddSignInManager()
-    .AddDefaultTokenProviders();
-
+// Identity Authentication
+builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
+    {
+        options.SignIn.RequireConfirmedAccount = false;
+        options.Password.RequireDigit = true;
+        options.Password.RequiredLength = 6;
+    })
+    .AddEntityFrameworkStores<ApplicationDbContext>();
 builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
+
+//builder.Services.AddRazorPages();
+//builder.Services.AddServerSideBlazor();
 
 var app = builder.Build();
 
@@ -58,8 +53,9 @@ else
 }
 
 app.UseHttpsRedirection();
-
-
+app.UseStaticFiles();
+app.UseAuthentication();
+app.UseAuthorization();
 app.UseAntiforgery();
 
 app.MapStaticAssets();
