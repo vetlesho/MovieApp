@@ -55,3 +55,6 @@ nunit-*.xml
 
 # .idea created by JetBrains 
 .idea/
+
+# database 
+movies.db
