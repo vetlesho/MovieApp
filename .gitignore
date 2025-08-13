@@ -58,3 +58,5 @@ nunit-*.xml
 
 # database 
 movies.db
+
+MovieApp.sln.DotSettings.user

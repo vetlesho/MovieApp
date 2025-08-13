@@ -1,6 +1,6 @@
-# MovieApp
+# Movie Rater Application
 
-A simple movie rater application built with ASP.NET, MudBlazor for UI, EF Core for database mapping, and Identity for authentication.
+A movie rater application built with ASP.NET, MudBlazor for UI, EF Core for database handling and mapping, and Identity for authentication.
 
 ## How to Run from Terminal
 
