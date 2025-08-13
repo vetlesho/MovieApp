@@ -4,6 +4,8 @@ using Microsoft.EntityFrameworkCore;
 using MovieApp.Components;
 using MovieApp.Components.Account;
 using MovieApp.Data;
+using MudBlazor.Services;
+using MovieApp.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,6 +18,9 @@ builder.Services.AddScoped<IdentityUserAccessor>();
 builder.Services.AddScoped<IdentityRedirectManager>();
 builder.Services.AddScoped<AuthenticationStateProvider, IdentityRevalidatingAuthenticationStateProvider>();
 
+// Add MudBlazor
+builder.Services.AddMudServices();
+
 builder.Services.AddAuthentication(options =>
     {
         options.DefaultScheme = IdentityConstants.ApplicationScheme;
@@ -27,6 +32,8 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
                        throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlite(connectionString));
+// Movie database
+builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlite("Data Source=movies.db"));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 builder.Services.AddIdentityCore<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)

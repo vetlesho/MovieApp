@@ -11,7 +11,11 @@
         </div>
 
         <article class="content px-4">
-            @Body
+            <MudThemeProvider>
+                <MudDialogProvider />
+                <MudSnackbarProvider />
+                @Body
+            </MudThemeProvider>
         </article>
     </main>
 </div>
