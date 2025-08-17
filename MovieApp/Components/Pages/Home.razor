@@ -1,5 +1,194 @@
 ﻿@page "/"
+@rendermode InteractiveServer
+@inject HttpClient Http
 
 <PageTitle>Home</PageTitle>
 
-<MudText Typo="Typo.h2">Movie rater</MudText>
+<AuthorizeView>
+    <Authorized>
+        <MudContainer MaxWidth="MaxWidth.Medium" Class="mt-8">
+            <MudText Typo="Typo.h2" Align="Align.Center" Class="mb-5">Movie Rater</MudText>
+            
+            <MudPaper Class="pa-6" Elevation="2">
+                <MudText Typo="Typo.h6" Class="mb-3">Search for a movie</MudText>
+                <MudGrid>
+                    <MudItem xs="10">
+                        <MudTextField @bind-Value="_searchTitle"
+                                      Variant="Variant.Outlined"
+                                      Placeholder="Enter movie title..."
+                                      FullWidth="true"/>
+                    </MudItem>
+                    <MudItem xs="2">
+                        <MudButton Variant="Variant.Filled"
+                                   Color="Color.Primary"
+                                   StartIcon="@Icons.Material.Filled.Search"
+                                   OnClick="@SearchMovie"
+                                   FullWidth="true">
+                            @if (_isLoading)
+                            {
+                                <MudProgressCircular Size="Size.Small" Indeterminate="true"/>
+                            }
+                            else
+                            {
+                                <MudText>Search Movie</MudText>
+                            }
+                        </MudButton>
+                    </MudItem>
+                </MudGrid>
+            </MudPaper>
+            
+            @if (!string.IsNullOrEmpty(_errorMessage))
+            {
+                <MudAlert Severity="Severity.Error" Class="mt-4">@_errorMessage</MudAlert>
+            }
+            
+            @if (_movieResult != null)
+            {
+                <MudPaper Class="mt-6 pa-4" Elevation="2">
+                    <MudGrid GutterSize="24">
+                        <MudItem md="4">
+                            <MudCard Elevation="3">
+                                <MudCardMedia Image="@_movieResult.Poster" Height="480"/>
+                            </MudCard>
+                        </MudItem>
+                        <MudItem md="8">
+                            <MudStack Spacing="2">
+                                <MudText Typo="Typo.h4">
+                                    @_movieResult.Title (@_movieResult.Year)
+                                </MudText>
+
+                                <MudStack Row="true" Spacing="1">
+                                    @foreach (var g in _genres)
+                                    {
+                                        <MudChip T="string" Color="Color.Primary" Variant="Variant.Filled">@g</MudChip>
+                                    }
+                                    <MudChip T="string" Variant="Variant.Outlined">@_movieResult.Runtime</MudChip>
+                                    <MudChip T="string" Variant="Variant.Outlined">IMDB: @_movieResult.ImdbRating</MudChip>
+                                    @if (!string.IsNullOrWhiteSpace(_movieResult.Metascore))
+                                    {
+                                        <MudChip T="string" Variant="Variant.Outlined">Metascore: @_movieResult.Metascore</MudChip>
+                                    }
+                                </MudStack>
+                                
+                                <MudDivider />
+
+                                <MudText Typo="Typo.subtitle1" Class="mt-2">Plot</MudText>
+                                <MudText Typo="Typo.body2">@_movieResult.Plot</MudText>
+
+                                <MudDivider Class="my-2" />
+                                
+                                <MudText Typo="Typo.body2">Actors: @_movieResult.Actors</MudText>
+                                <MudText Typo="Typo.body2">Director: @_movieResult.Director</MudText>
+                                <MudText Typo="Typo.body2">Writer: @_movieResult.Writer</MudText>
+
+                                <MudDivider Class="my-2" />
+                                
+                                <MudStack Row="true" Spacing="2">
+                                    <MudButton Variant="Variant.Filled" Color="Color.Success">Add to watched</MudButton>
+                                </MudStack>
+                            </MudStack>
+                        </MudItem>
+                    </MudGrid>
+                </MudPaper>
+            }
+        </MudContainer>
+    </Authorized>
+    <NotAuthorized>
+        <MudContainer MaxWidth="MaxWidth.Medium" Class="mt-8">
+            <MudAlert Severity="Severity.Info">
+                Please log in to search and rate movies.
+            </MudAlert>
+        </MudContainer>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    private string _searchTitle = string.Empty;
+    private bool _isLoading;
+    private string? _errorMessage;
+    private MovieResponse? _movieResult;
+    private List<string> _genres = new();
+
+    private async Task SearchMovie()
+    {
+        Console.WriteLine("SearchMovie called");
+        if (string.IsNullOrWhiteSpace(_searchTitle)) return;
+
+        _isLoading = true;
+        _errorMessage = null;
+        StateHasChanged();
+
+        try
+        {
+            // var apiKey = Configuration["OMDbApiKey"];
+            // TODO: Remove ApiKey and set up correctly
+            var url = $"http://www.omdbapi.com/?t={Uri.EscapeDataString(_searchTitle)}&apikey=f44bef92";
+            Console.WriteLine($"API URL: {url}");
+            
+            var response = await Http.GetFromJsonAsync<MovieResponse>(url);
+            Console.WriteLine("API call completed");
+
+            if (response?.Response == "True")
+            {
+                _movieResult = response;
+                _genres = response.Genre?
+                    .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                    .Select(g => g.Trim())
+                    .Where(g => g.Length > 0)
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .ToList() ?? new();
+                Console.WriteLine($"Movie found: {response.Title}");
+            }
+            else
+            {
+                _genres.Clear();
+                Console.WriteLine($"Error: {_errorMessage}");
+                _errorMessage = response?.Error ?? "Movie not found";
+                _movieResult = null;
+            }
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"Exception: {e.Message}");
+            _errorMessage = "Error searching for movie. Try again.";
+            _movieResult = null;
+
+            //throw;
+        }
+        finally
+        {
+            _isLoading = false;
+            StateHasChanged();
+        }
+
+    }
+    
+    public class MovieResponse
+    {
+        public string Title { get; set; } = string.Empty;
+        public string Year { get; set; } = string.Empty;
+        public string Rated { get; set; } = string.Empty;
+        public string Released { get; set; } = string.Empty;
+        public string Runtime { get; set; } = string.Empty;
+        public string Genre { get; set; } = string.Empty;
+        public string Director { get; set; } = string.Empty;
+        public string Writer { get; set; } = string.Empty;
+        public string Actors { get; set; } = string.Empty;
+        public string Plot { get; set; } = string.Empty;
+        public string Language { get; set; } = string.Empty;
+        public string Country { get; set; } = string.Empty;
+        public string Awards { get; set; } = string.Empty;
+        public string Poster { get; set; } = string.Empty;
+        public string ImdbRating { get; set; } = string.Empty;
+        public string ImdbVotes { get; set; } = string.Empty;
+        public string ImdbID { get; set; } = string.Empty;
+        public string Type { get; set; } = string.Empty;
+        public string DVD { get; set; } = string.Empty;
+        public string BoxOffice { get; set; } = string.Empty;
+        public string Production { get; set; } = string.Empty;
+        public string Website { get; set; } = string.Empty;
+        public string Response { get; set; } = string.Empty;
+        public string Error { get; set; } = string.Empty;
+        public string Metascore { get; set; } = string.Empty;
+    }
+}

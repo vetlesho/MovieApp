@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -37,6 +38,9 @@ builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSe
 
 //builder.Services.AddRazorPages();
 //builder.Services.AddServerSideBlazor();
+
+// For http client requests 
+builder.Services.AddHttpClient();
 
 var app = builder.Build();
 
