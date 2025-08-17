@@ -1,33 +1,43 @@
-# Movie Rater Application
+# MovieApp
 
-A movie rater application built with ASP.NET, MudBlazor for UI, EF Core for database handling and mapping, and Identity for authentication.
-
-## How to Run from Terminal
-
-1. **Navigate to the project directory (inside root directory):**
-   ```sh
-   cd MovieApp
-   ```
-2. **Clean the project:**
-   ```sh
-   dotnet clean
-   ```
-3. **Build the project:**
-   ```sh
-   dotnet build
-   ```
-4. **Run the application:**
-   ```sh
-   dotnet run
-   ```
-
-The application will start and you can access it in your browser at the URL shown in the terminal (usually `https://localhost:7002` or `http://localhost:5243`).
-
-## Features
-- User authentication (login/register)
-- Search for movies (in progress)
-- Rate movies (in progress)
+Movie rating application built with ASP.NET Core (.NET 9), EF Core (SQLite), MudBlazor UI, and ASP.NET Identity.
 
 ---
+### Features
+- Register / login
+- Add & list movies (WIP)
+- Rate movies (WIP)
 
-For more details, see the source code and comments.
+### Prerequisites:
+- .NET 9 SDK installed (`dotnet --version`)
+(No DB setup needed; a local SQLite file is created automatically.)
+
+--- 
+
+### Clean build + run:
+```bash
+cd MovieApp
+dotnet clean && dotnet build && dotnet run
+```
+Open the shown URL (e.g. http://localhost:5243 or https://localhost:7002).
+
+### Development
+
+Run (development):
+```bash
+cd MovieApp
+dotnet run
+```
+
+Hot reload:
+```bash
+cd MovieApp
+dotnet watch run
+```
+Add a migration (after changing models):
+```bash
+cd MovieApp
+dotnet ef migrations add Name && dotnet ef database update
+```
+(Install tool if needed: `dotnet tool install --global dotnet-ef`)
+
